@@ -91,17 +91,70 @@ abstract class Numeros(
     }
 }
 
-// Clase derivada, que extiende de la clase base Numeros
-class Suma(
-    unoParametro: Int,
-    dosParametro: Int
-) : Numeros(unoParametro, dosParametro) {
-    init {
-        println("Inicializando la clase Suma")
-    }
-}
-
 // Ejemplo de uso incorrecto de una clase sin constructor válido
 // val sumaInvalida = Suma() // Error: No se han proporcionado los parámetros requeridos
 // Explicación: `Suma` requiere dos parámetros en su constructor (unoParametro y dosParametro).
 // La creación de un objeto sin estos parámetros no es válida.
+
+//Clase Hijo
+class Suma( //Constructor Primario
+    unoParametro: Int,
+    dosParametro: Int,
+): Numeros( //Clase padre, Numeros (extendiendo)     ---> Pasamos los atributos de Suma al padre Números
+    unoParametro,
+    dosParametro
+){
+    //Modificadores de Acceso
+    public val soyPublicoExplicito: String = "Publicas"
+    val soyPublicoImplicito: String = "Publico implicito"
+    init{ //Bloque constructor primario
+        this.numeroUno //Heredamos del Padre
+        this.numeroDos
+        numeroUno //this. OPCIONAL (propiedades, metodos)
+        numeroDos //this. OPCIONAL (propiedades, metodos)
+        this.soyPublicoExplicito
+        soyPublicoImplicito
+    }
+    //-----------Constructores Secundarios
+    constructor(
+        uno: Int?, //Entero nullable
+        dos: Int,
+    ):this(
+        if(uno == null) 0 else uno,
+        dos
+    ){
+        //OPCIONAL
+        //Bloque de código de constructor secundario
+    }
+    constructor(
+        uno: Int,
+        dos: Int?, //Entero nullable
+    ):this(
+        uno,
+        if(dos==null) 0 else dos,
+    )
+    constructor(
+        uno: Int?,//Entero nullable
+        dos: Int?,//Entero nullable
+    ):this(
+        if(uno==null) 0 else uno,
+        if(dos==null) 0 else dos
+    )
+    fun sumar():Int{
+        val total = numeroUno + numeroDos
+        agregarHistorial(total)
+        return total
+    }
+    companion object{ //Comparte entre todas las instancias, similar al STATIC
+        //funciones, variables
+        //NombreClase.metodo, NombreClase.funcion =>
+        //Suma.pi
+        val pi = 3.14
+        //Suma.elevarAlCuadrado
+        fun elevarAlCuadrado(num:Int):Int{ return num*num}
+        val historialSumas = arrayListOf<Int>()
+        fun agregarHistorial(valorTotalSuma:Int){
+            historialSumas.add(valorTotalSuma)
+        }
+    }
+}
