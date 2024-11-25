@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="texto">Just Do It.</string>
+    <color name="textoColor">#FFFFFF</color>
+    <color name="bgColor">#000000</color>
+</resources>

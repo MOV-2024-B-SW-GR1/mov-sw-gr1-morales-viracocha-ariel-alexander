@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="texto">Solo hazlo.</string>
+    <color name="textoColor">#000000</color>
+    <color name="bgColor">#98F0F8</color>
+</resources>

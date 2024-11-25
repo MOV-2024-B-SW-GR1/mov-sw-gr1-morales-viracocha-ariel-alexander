@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="texto">Haz que suceda.</string>
+    <color name="textoColor">#FFFFFF</color>
+    <color name="bgColor">#FF5722</color>
+</resources>
