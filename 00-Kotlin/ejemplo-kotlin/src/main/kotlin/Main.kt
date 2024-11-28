@@ -47,7 +47,81 @@ fun main(args: Array<String>) {
     calcularSueldo(10.00, bonoEspecial = 20.00)
     println (calcularSueldo(bonoEspecial = 20.00, sueldo = 10.00, tasa = 14.00));
 
+    fun demostracionArreglos() {
+        // -----Clase 14-11-2024
+
+        // Arreglos
+        // Estaticos
+        val arregloEstatico: Array<Int> = arrayOf(1, 2, 3)
+        println(arregloEstatico.contentToString()) // Usar contentToString() para imprimir un array correctamente.
+
+        // Dinamicos
+        val arregloDinamico: ArrayList<Int> = arrayListOf(
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+        )
+
+        println(arregloDinamico)
+        arregloDinamico.add(11)
+        arregloDinamico.add(12)
+        println(arregloDinamico)
+
+        // For each = > Unit
+        // Iterar un arreglo
+        arregloDinamico.forEach { valorActual: Int ->
+            println("valorActual: $valorActual")
+        }
+
+        // "it" (en inglés "eso") significa el elemento iterado
+        arregloDinamico.forEach {
+            println("Valor Actual (it): $it")
+        }
+
+        // Map -> Muta (Modifica cambio) el arreglo
+        // 1. enviamos el nuevo valor a la iteración
+        // 2. nos devuelve un nuevo Arreglo con valores de las iteraciones
+        val respuestaMap: List<Double> = arregloDinamico.map { valorActual: Int ->
+            valorActual.toDouble() + 100.00
+        }
+        println("Map 1: $respuestaMap")
+
+        val respuestaMapDos = arregloDinamico.map { it + 15 }
+        println("Map 2: $respuestaMapDos")
+
+        // Filter -> filtra el arreglo
+        // 1. Devolver una expresión true o false
+        // 2. nuevo arreglo filtrado
+        val respuestaFilter: List<Int> = arregloDinamico.filter { valorActual: Int ->
+            // Expresión o condición
+            val mayoresACinco: Boolean = valorActual > 5
+            mayoresACinco
+        }
+
+        val respuestaFilterDos = arregloDinamico.filter { it <= 5 }
+        println("FILTER: $respuestaFilter")
+        println(respuestaFilterDos)
+
+        // OP AND
+        // ANY → ¿Algún elemento cumple la condición?
+        val respuestaAny: Boolean = arregloDinamico.any { valorActual: Int ->
+            valorActual > 5
+        }
+        println("ANY: $respuestaAny")
+
+        // ALL → ¿Todos los elementos cumplen la condición?
+        val respuestaAll: Boolean = arregloDinamico.all { valorActual: Int ->
+            valorActual > 5
+        }
+        println("ALL: $respuestaAll") // false
+
+        // REDUCE → Valor acumulado
+        val respuestaReduce: Int = arregloDinamico.reduce { acumulado: Int, valorActual: Int ->
+            acumulado + valorActual // Cambiar o usar la lógica de negocio
+        }
+        println(respuestaReduce)
+    }
+    demostracionArreglos()
 }
+
 
 // Función para imprimir el nombre formateado
 fun imprimirNombre(nombre: String): Unit { // El tipo Unit es opcional en funciones que no devuelven valor

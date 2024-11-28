@@ -1,1 +1,1 @@
-Zoo1|Quito|2000-10-10|1|999.0|Alex,A,11,12.0,false
+Zoo1|Quito|2000-10-10|1|999.0|Fito,Ganso,6,3.0,false
