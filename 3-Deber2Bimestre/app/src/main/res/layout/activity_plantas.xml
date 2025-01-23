@@ -4,25 +4,25 @@
     android:layout_height="match_parent">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewParcelas"
+        android:id="@+id/recyclerViewPlantas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/btnCrearParcela" />
+        android:layout_above="@id/btnCrearPlanta" />
 
     <TextView
-        android:id="@+id/txtEmpty"
+        android:id="@+id/txtEmptyPlantas"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="No hay parcelas disponibles"
+        android:text="No hay plantas en esta parcela"
         android:visibility="gone" />
 
     <Button
-        android:id="@+id/btnCrearParcela"
+        android:id="@+id/btnCrearPlanta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_margin="16dp"
-        android:text="Crear Parcela" />
+        android:text="Crear Planta" />
 
 </RelativeLayout>

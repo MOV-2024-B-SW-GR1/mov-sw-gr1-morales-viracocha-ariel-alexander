@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/menu_editar"
+        android:id="@+id/menuEditar"
         android:title="Editar" />
     <item
-        android:id="@+id/menu_eliminar"
+        android:id="@+id/menuEliminar"
         android:title="Eliminar" />
     <item
-        android:id="@+id/menu_ver_plantas"
+        android:id="@+id/menuVerPlantas"
         android:title="Ver plantas" />
 </menu>

@@ -1,63 +1,148 @@
 package com.example.a3_deber2bimestre
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import android.widget.PopupMenu
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var parcelaAdapter: ParcelaAdapter
-    private val parcelasList = mutableListOf<String>() // Lista de parcelas
+    private lateinit var recyclerViewParcelas: RecyclerView
+    private lateinit var txtEmpty: TextView
+    private lateinit var btnCrearParcela: Button
+    private val parcelas = mutableListOf<Parcela>()
+    private lateinit var adapter: ParcelaAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // Ajustes de ventana
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        initializeViews()
+        setupRecyclerView()
+        setupListeners()
+        actualizarVistaVacia()
+    }
+
+    private fun initializeViews() {
+        recyclerViewParcelas = findViewById(R.id.recyclerViewParcelas)
+        txtEmpty = findViewById(R.id.txtEmpty)
+        btnCrearParcela = findViewById(R.id.btnCrearParcela)
+    }
+
+    private fun setupRecyclerView() {
+        adapter = ParcelaAdapter(parcelas) { parcela, view ->
+            mostrarMenuParcela(parcela, view)
+        }
+        recyclerViewParcelas.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = this@MainActivity.adapter
+        }
+    }
+
+    private fun setupListeners() {
+        btnCrearParcela.setOnClickListener {
+            mostrarDialogoCrearParcela()
+        }
+    }
+
+    private fun actualizarVistaVacia() {
+        if (parcelas.isEmpty()) {
+            txtEmpty.visibility = View.VISIBLE
+            recyclerViewParcelas.visibility = View.GONE
+        } else {
+            txtEmpty.visibility = View.GONE
+            recyclerViewParcelas.visibility = View.VISIBLE
+        }
+    }
+
+    private fun mostrarMenuParcela(parcela: Parcela, view: View) {
+        PopupMenu(this, view).apply {
+            menuInflater.inflate(R.menu.manu_parcela, menu)
+            setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.menuEditar -> {
+                        editarParcela(parcela)
+                        true
+                    }
+                    R.id.menuEliminar -> {
+                        eliminarParcela(parcela)
+                        true
+                    }
+                    R.id.menuVerPlantas -> {
+                        verPlantas(parcela)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            show()
+        }
+    }
+
+    private fun mostrarDialogoCrearParcela() {
+        val input = EditText(this).apply {
+            setPadding(50, 30, 50, 30)
         }
 
-        // Configurar RecyclerView
-        val recyclerView: RecyclerView = findViewById(R.id.recyclerViewParcelas)
-        parcelaAdapter = ParcelaAdapter(parcelasList, this::onParcelaClicked)
-        recyclerView.adapter = parcelaAdapter
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        AlertDialog.Builder(this)
+            .setTitle("Nueva Parcela")
+            .setView(input)
+            .setPositiveButton("Crear") { _, _ ->
+                val nombre = input.text.toString()
+                if (nombre.isNotEmpty()) {
+                    parcelas.add(Parcela(parcelas.size + 1, nombre))
+                    adapter.notifyDataSetChanged()
+                    actualizarVistaVacia()
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
 
-        // Configurar botón Crear Parcela
-        val buttonCrear: FloatingActionButton = findViewById(R.id.buttonCrear)
-        buttonCrear.setOnClickListener {
-            crearNuevaParcela()
+    private fun editarParcela(parcela: Parcela) {
+        val input = EditText(this).apply {
+            setText(parcela.nombre)
+            setPadding(50, 30, 50, 30)
         }
+
+        AlertDialog.Builder(this)
+            .setTitle("Editar Parcela")
+            .setView(input)
+            .setPositiveButton("Guardar") { _, _ ->
+                val nuevoNombre = input.text.toString()
+                if (nuevoNombre.isNotEmpty()) {
+                    parcela.nombre = nuevoNombre
+                    adapter.notifyDataSetChanged()
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
-    // Método para crear una nueva parcela
-    private fun crearNuevaParcela() {
-        val nuevaParcela = "Parcela ${parcelasList.size + 1}"
-        parcelasList.add(nuevaParcela)
-        parcelaAdapter.notifyItemInserted(parcelasList.size - 1)
-        Toast.makeText(this, "Parcela $nuevaParcela creada", Toast.LENGTH_SHORT).show()
+    private fun eliminarParcela(parcela: Parcela) {
+        AlertDialog.Builder(this)
+            .setTitle("Eliminar Parcela")
+            .setMessage("¿Estás seguro de que quieres eliminar esta parcela?")
+            .setPositiveButton("Sí") { _, _ ->
+                parcelas.remove(parcela)
+                adapter.notifyDataSetChanged()
+                actualizarVistaVacia()
+            }
+            .setNegativeButton("No", null)
+            .show()
     }
 
-    // Método cuando se da clic en una parcela
-    private fun onParcelaClicked(parcela: String) {
-        Toast.makeText(this, "Clic en $parcela", Toast.LENGTH_SHORT).show()
-        // Aquí puedes mostrar el menú con opciones de Editar, Eliminar o Ver plantas
-        mostrarMenuOpciones(parcela)
-    }
-
-    // Método para mostrar el menú de opciones
-    private fun mostrarMenuOpciones(parcela: String) {
-        // Implementa aquí tu lógica para mostrar el menú de opciones para Editar/Eliminar/Ver Plantas
-        Toast.makeText(this, "Mostrar opciones para $parcela", Toast.LENGTH_SHORT).show()
+    private fun verPlantas(parcela: Parcela) {
+        val intent = Intent(this, PlantasActivity::class.java).apply {
+            putExtra("PARCELA_ID", parcela.id)
+            putExtra("PARCELA_NOMBRE", parcela.nombre)
+        }
+        startActivity(intent)
     }
 }

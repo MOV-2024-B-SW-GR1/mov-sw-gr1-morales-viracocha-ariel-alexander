@@ -10,16 +10,22 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <TextView
-            android:id="@+id/txtNombreParcela"
+            android:id="@+id/txtEspecie"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
             android:textSize="18sp"
-            android:textColor="@android:color/black" />
+            android:textStyle="bold" />
 
+        <TextView
+            android:id="@+id/txtDetalles"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="14sp" />
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>
