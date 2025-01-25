@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class ParcelaAdapter(
-    private val parcelas: List<Parcela>,
+    private val parcelas: MutableList<Parcela>,
     private val onItemClick: (Parcela, View) -> Unit
 ) : RecyclerView.Adapter<ParcelaAdapter.ParcelaViewHolder>() {
 
@@ -26,6 +26,28 @@ class ParcelaAdapter(
     }
 
     override fun getItemCount() = parcelas.size
+
+    // Actualiza toda la lista de parcelas
+    fun updateData(newParcelas: List<Parcela>) {
+        parcelas.clear()
+        parcelas.addAll(newParcelas)
+        notifyDataSetChanged()
+    }
+
+    // Agrega una nueva parcela a la lista
+    fun addParcela(parcela: Parcela) {
+        parcelas.add(parcela)
+        notifyItemInserted(parcelas.size - 1)
+    }
+
+    // Elimina una parcela de la lista
+    fun removeParcela(parcela: Parcela) {
+        val position = parcelas.indexOf(parcela)
+        if (position != -1) {
+            parcelas.removeAt(position)
+            notifyItemRemoved(position)
+        }
+    }
 
     class ParcelaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val txtNombreParcela: TextView = itemView.findViewById(R.id.txtNombreParcela)

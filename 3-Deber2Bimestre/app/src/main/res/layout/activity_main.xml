@@ -3,26 +3,33 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- RecyclerView para mostrar la lista de parcelas -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewParcelas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/btnCrearParcela" />
 
+    <!-- Texto que aparece si no hay parcelas -->
     <TextView
         android:id="@+id/txtEmpty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:text="No hay parcelas disponibles"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:textSize="16sp"
+        android:textColor="@android:color/darker_gray" />
 
+    <!-- Botón para crear una nueva parcela -->
     <Button
         android:id="@+id/btnCrearParcela"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_margin="16dp"
-        android:text="Crear Parcela" />
+        android:text="Crear Parcela"
+        android:backgroundTint="@android:color/holo_blue_light"
+        android:textColor="@android:color/white" />
 
 </RelativeLayout>

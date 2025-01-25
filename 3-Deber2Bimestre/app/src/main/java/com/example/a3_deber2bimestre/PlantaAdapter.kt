@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class PlantaAdapter(
-    private val plantas: List<Planta>,
+    private val plantas: MutableList<Planta>,
     private val onItemClick: (Planta, View) -> Unit
 ) : RecyclerView.Adapter<PlantaAdapter.PlantaViewHolder>() {
 
@@ -26,6 +26,25 @@ class PlantaAdapter(
     }
 
     override fun getItemCount() = plantas.size
+
+    fun updateData(newPlantas: List<Planta>) {
+        plantas.clear()
+        plantas.addAll(newPlantas)
+        notifyDataSetChanged()
+    }
+
+    fun addPlanta(planta: Planta) {
+        plantas.add(planta)
+        notifyItemInserted(plantas.size - 1)
+    }
+
+    fun removePlanta(planta: Planta) {
+        val position = plantas.indexOf(planta)
+        if (position != -1) {
+            plantas.removeAt(position)
+            notifyItemRemoved(position)
+        }
+    }
 
     class PlantaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val txtEspecie: TextView = itemView.findViewById(R.id.txtEspecie)

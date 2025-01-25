@@ -3,26 +3,33 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- RecyclerView para mostrar la lista de plantas -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewPlantas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/btnCrearPlanta" />
 
+    <!-- Texto que aparece si no hay plantas -->
     <TextView
         android:id="@+id/txtEmptyPlantas"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:text="No hay plantas en esta parcela"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:textSize="16sp"
+        android:textColor="@android:color/darker_gray" />
 
+    <!-- Botón para crear una nueva planta -->
     <Button
         android:id="@+id/btnCrearPlanta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_margin="16dp"
-        android:text="Crear Planta" />
+        android:text="Crear Planta"
+        android:backgroundTint="@android:color/holo_green_light"
+        android:textColor="@android:color/white" />
 
 </RelativeLayout>

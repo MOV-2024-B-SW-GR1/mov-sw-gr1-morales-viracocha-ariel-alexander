@@ -1,23 +1,21 @@
 package com.example.a3_deber2bimestre
 
+import android.content.ContentValues
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.widget.PopupMenu
 
 class PlantasActivity : AppCompatActivity() {
     private lateinit var recyclerViewPlantas: RecyclerView
     private lateinit var txtEmptyPlantas: TextView
     private lateinit var btnCrearPlanta: Button
-    private val plantas = mutableListOf<Planta>()
     private lateinit var adapter: PlantaAdapter
+
+    private val dbHelper by lazy { DBHelper(this) }
     private var parcelaId: Int = -1
     private var nombreParcela: String = ""
 
@@ -34,6 +32,7 @@ class PlantasActivity : AppCompatActivity() {
         initializeViews()
         setupRecyclerView()
         setupListeners()
+        cargarPlantas() // Cargar plantas desde SQLite
         actualizarVistaVacia()
     }
 
@@ -44,7 +43,7 @@ class PlantasActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = PlantaAdapter(plantas) { planta, view ->
+        adapter = PlantaAdapter(mutableListOf()) { planta, view ->
             mostrarMenuPlanta(planta, view)
         }
         recyclerViewPlantas.apply {
@@ -59,14 +58,31 @@ class PlantasActivity : AppCompatActivity() {
         }
     }
 
-    private fun actualizarVistaVacia() {
-        if (plantas.isEmpty()) {
-            txtEmptyPlantas.visibility = View.VISIBLE
-            recyclerViewPlantas.visibility = View.GONE
-        } else {
-            txtEmptyPlantas.visibility = View.GONE
-            recyclerViewPlantas.visibility = View.VISIBLE
+    private fun cargarPlantas() {
+        val plantas = mutableListOf<Planta>()
+        val db = dbHelper.readableDatabase
+        val cursor = db.query(
+            DBHelper.TABLE_PLANTA,
+            null,
+            "${DBHelper.COLUMN_PLANTA_PARCELA_ID} = ?",
+            arrayOf(parcelaId.toString()),
+            null,
+            null,
+            null
+        )
+
+        while (cursor.moveToNext()) {
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PLANTA_ID))
+            val especie = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PLANTA_ESPECIE))
+            val edad = cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PLANTA_EDAD))
+            val color = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PLANTA_COLOR))
+            val altura = cursor.getDouble(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PLANTA_ALTURA))
+            val plantaParcelaId = cursor.getInt(cursor.getColumnIndexOrThrow(DBHelper.COLUMN_PLANTA_PARCELA_ID))
+
+            plantas.add(Planta(id, especie, edad, color, altura, plantaParcelaId))
         }
+        cursor.close()
+        adapter.updateData(plantas) // Actualiza el adaptador con los datos de SQLite
     }
 
     private fun mostrarDialogoCrearPlanta() {
@@ -82,21 +98,30 @@ class PlantasActivity : AppCompatActivity() {
                 val altura = view.findViewById<EditText>(R.id.etAltura).text.toString().toDoubleOrNull() ?: 0.0
 
                 if (especie.isNotEmpty() && color.isNotEmpty()) {
-                    val planta = Planta(
-                        id = plantas.size + 1,
-                        especie = especie,
-                        edad = edad,
-                        color = color,
-                        altura = altura,
-                        parcelaId = parcelaId
-                    )
-                    plantas.add(planta)
-                    adapter.notifyDataSetChanged()
-                    actualizarVistaVacia()
+                    val id = insertarPlanta(especie, edad, color, altura)
+                    if (id != -1L) {
+                        val nuevaPlanta = Planta(id.toInt(), especie, edad, color, altura, parcelaId)
+                        adapter.addPlanta(nuevaPlanta)
+                        actualizarVistaVacia()
+                    } else {
+                        Toast.makeText(this, "Error al crear planta", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             .setNegativeButton("Cancelar", null)
             .show()
+    }
+
+    private fun insertarPlanta(especie: String, edad: Int, color: String, altura: Double): Long {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(DBHelper.COLUMN_PLANTA_ESPECIE, especie)
+            put(DBHelper.COLUMN_PLANTA_EDAD, edad)
+            put(DBHelper.COLUMN_PLANTA_COLOR, color)
+            put(DBHelper.COLUMN_PLANTA_ALTURA, altura)
+            put(DBHelper.COLUMN_PLANTA_PARCELA_ID, parcelaId)
+        }
+        return db.insert(DBHelper.TABLE_PLANTA, null, values)
     }
 
     private fun mostrarMenuPlanta(planta: Planta, view: View) {
@@ -126,7 +151,6 @@ class PlantasActivity : AppCompatActivity() {
     private fun editarPlanta(planta: Planta) {
         val view = layoutInflater.inflate(R.layout.dialog_crear_planta, null)
 
-        // Pre-llenar los campos
         view.findViewById<EditText>(R.id.etEspecie).setText(planta.especie)
         view.findViewById<EditText>(R.id.etEdad).setText(planta.edad.toString())
         view.findViewById<EditText>(R.id.etColor).setText(planta.color)
@@ -136,15 +160,36 @@ class PlantasActivity : AppCompatActivity() {
             .setTitle("Editar Planta")
             .setView(view)
             .setPositiveButton("Guardar") { _, _ ->
-                // Actualizar datos de la planta
-                planta.especie = view.findViewById<EditText>(R.id.etEspecie).text.toString()
-                planta.edad = view.findViewById<EditText>(R.id.etEdad).text.toString().toIntOrNull() ?: planta.edad
-                planta.color = view.findViewById<EditText>(R.id.etColor).text.toString()
-                planta.altura = view.findViewById<EditText>(R.id.etAltura).text.toString().toDoubleOrNull() ?: planta.altura
-                adapter.notifyDataSetChanged()
+                val nuevaEspecie = view.findViewById<EditText>(R.id.etEspecie).text.toString()
+                val nuevaEdad = view.findViewById<EditText>(R.id.etEdad).text.toString().toIntOrNull() ?: planta.edad
+                val nuevoColor = view.findViewById<EditText>(R.id.etColor).text.toString()
+                val nuevaAltura = view.findViewById<EditText>(R.id.etAltura).text.toString().toDoubleOrNull() ?: planta.altura
+
+                val actualizado = actualizarPlanta(planta.id, nuevaEspecie, nuevaEdad, nuevoColor, nuevaAltura)
+                if (actualizado) {
+                    planta.especie = nuevaEspecie
+                    planta.edad = nuevaEdad
+                    planta.color = nuevoColor
+                    planta.altura = nuevaAltura
+                    adapter.notifyDataSetChanged()
+                } else {
+                    Toast.makeText(this, "Error al actualizar planta", Toast.LENGTH_SHORT).show()
+                }
             }
             .setNegativeButton("Cancelar", null)
             .show()
+    }
+
+    private fun actualizarPlanta(id: Int, especie: String, edad: Int, color: String, altura: Double): Boolean {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(DBHelper.COLUMN_PLANTA_ESPECIE, especie)
+            put(DBHelper.COLUMN_PLANTA_EDAD, edad)
+            put(DBHelper.COLUMN_PLANTA_COLOR, color)
+            put(DBHelper.COLUMN_PLANTA_ALTURA, altura)
+        }
+        val rowsAffected = db.update(DBHelper.TABLE_PLANTA, values, "${DBHelper.COLUMN_PLANTA_ID} = ?", arrayOf(id.toString()))
+        return rowsAffected > 0
     }
 
     private fun eliminarPlanta(planta: Planta) {
@@ -152,12 +197,22 @@ class PlantasActivity : AppCompatActivity() {
             .setTitle("Eliminar Planta")
             .setMessage("¿Estás seguro de que quieres eliminar esta planta?")
             .setPositiveButton("Sí") { _, _ ->
-                plantas.remove(planta)
-                adapter.notifyDataSetChanged()
-                actualizarVistaVacia()
+                val eliminada = eliminarPlantaDeSQLite(planta.id)
+                if (eliminada) {
+                    adapter.removePlanta(planta)
+                    actualizarVistaVacia()
+                } else {
+                    Toast.makeText(this, "Error al eliminar planta", Toast.LENGTH_SHORT).show()
+                }
             }
             .setNegativeButton("No", null)
             .show()
+    }
+
+    private fun eliminarPlantaDeSQLite(id: Int): Boolean {
+        val db = dbHelper.writableDatabase
+        val rowsAffected = db.delete(DBHelper.TABLE_PLANTA, "${DBHelper.COLUMN_PLANTA_ID} = ?", arrayOf(id.toString()))
+        return rowsAffected > 0
     }
 
     private fun mostrarDetallesPlanta(planta: Planta) {
@@ -171,5 +226,15 @@ class PlantasActivity : AppCompatActivity() {
             """.trimIndent())
             .setPositiveButton("Cerrar", null)
             .show()
+    }
+
+    private fun actualizarVistaVacia() {
+        if (adapter.itemCount == 0) {
+            txtEmptyPlantas.visibility = View.VISIBLE
+            recyclerViewPlantas.visibility = View.GONE
+        } else {
+            txtEmptyPlantas.visibility = View.GONE
+            recyclerViewPlantas.visibility = View.VISIBLE
+        }
     }
 }
