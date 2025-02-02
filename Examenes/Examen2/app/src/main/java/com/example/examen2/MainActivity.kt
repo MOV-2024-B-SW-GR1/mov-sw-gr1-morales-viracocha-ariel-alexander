@@ -1,22 +1,29 @@
 package com.example.examen2
 
 // MainActivity.kt
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.BaseAdapter
 import android.widget.ListView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
     private lateinit var dbHelper: DatabaseHelper
     private lateinit var listView: ListView
+    private lateinit var emptyStateView: TextView
     private lateinit var locations: ArrayList<Location>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,9 +32,9 @@ class MainActivity : AppCompatActivity() {
 
         dbHelper = DatabaseHelper(this)
         listView = findViewById(R.id.locationListView)
+        emptyStateView = findViewById(R.id.tvEmptyState)
 
-        // Configurar FAB para agregar nueva ubicación
-        findViewById<FloatingActionButton>(R.id.fabAddLocation).setOnClickListener {
+        findViewById<MaterialButton>(R.id.btnAddLocation).setOnClickListener {
             showAddLocationDialog()
         }
 
@@ -40,12 +47,36 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadLocations() {
         locations = dbHelper.getAllLocations()
-        val adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_list_item_1,
-            locations.map { it.name }
-        )
-        listView.adapter = adapter
+
+        if (locations.isEmpty()) {
+            listView.visibility = View.GONE
+            emptyStateView.visibility = View.VISIBLE
+        } else {
+            listView.visibility = View.VISIBLE
+            emptyStateView.visibility = View.GONE
+            listView.adapter = LocationAdapter(this, locations)
+        }
+    }
+    private class LocationAdapter(
+        private val context: Context,
+        private val locations: List<Location>
+    ) : BaseAdapter() {
+
+        override fun getCount(): Int = locations.size
+        override fun getItem(position: Int): Location = locations[position]
+        override fun getItemId(position: Int): Long = position.toLong()
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+            val view = convertView ?: LayoutInflater.from(context)
+                .inflate(R.layout.location_item, parent, false)
+
+            val location = getItem(position)
+            view.findViewById<TextView>(R.id.tvName).text = location.name
+            view.findViewById<TextView>(R.id.tvDescription).text =
+                location.description ?: "Sin descripción"
+
+            return view
+        }
     }
 
     private fun showLocationMenu(view: View, location: Location) {
@@ -53,14 +84,14 @@ class MainActivity : AppCompatActivity() {
             menu.add("Ver en Mapa")
             menu.add("Editar")
             menu.add("Eliminar")
-            menu.add("Ver Detalles")
+            menu.add("Ver Observaciones")
 
             setOnMenuItemClickListener { item ->
                 when (item.title) {
                     "Ver en Mapa" -> openMap(location)
                     "Editar" -> editLocation(location)
                     "Eliminar" -> deleteLocation(location)
-                    "Ver Detalles" -> openDetails(location)
+                    "Ver Observaciones" -> openDetails(location)
                 }
                 true
             }

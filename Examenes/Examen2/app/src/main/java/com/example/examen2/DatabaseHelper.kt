@@ -10,7 +10,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val DATABASE_NAME = "LocationsDB"
         private const val DATABASE_VERSION = 1
 
-        // Tabla de Ubicaciones
         private const val TABLE_LOCATIONS = "locations"
         private const val COLUMN_ID = "id"
         private const val COLUMN_NAME = "name"
@@ -18,7 +17,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val COLUMN_LATITUDE = "latitude"
         private const val COLUMN_LONGITUDE = "longitude"
 
-        // Tabla de Detalles (relación uno a muchos con locations)
         private const val TABLE_DETAILS = "location_details"
         private const val COLUMN_DETAIL_ID = "detail_id"
         private const val COLUMN_LOCATION_ID = "location_id"
@@ -27,6 +25,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     override fun onCreate(db: SQLiteDatabase) {
+        // Tabla locations (One)
         val createLocationsTable = """
             CREATE TABLE $TABLE_LOCATIONS (
                 $COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,18 +36,24 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             )
         """.trimIndent()
 
+        // Tabla details (Many) con FOREIGN KEY y ON DELETE CASCADE
         val createDetailsTable = """
             CREATE TABLE $TABLE_DETAILS (
                 $COLUMN_DETAIL_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                $COLUMN_LOCATION_ID INTEGER,
+                $COLUMN_LOCATION_ID INTEGER NOT NULL,
                 $COLUMN_DETAIL_TITLE TEXT NOT NULL,
                 $COLUMN_DETAIL_DESCRIPTION TEXT,
-                FOREIGN KEY($COLUMN_LOCATION_ID) REFERENCES $TABLE_LOCATIONS($COLUMN_ID)
+                FOREIGN KEY($COLUMN_LOCATION_ID) 
+                    REFERENCES $TABLE_LOCATIONS($COLUMN_ID)
+                    ON DELETE CASCADE
             )
         """.trimIndent()
 
         db.execSQL(createLocationsTable)
         db.execSQL(createDetailsTable)
+
+        // Habilitar las foreign keys
+        db.execSQL("PRAGMA foreign_keys=ON;")
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -142,5 +147,23 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             }
         }
         return details
+    }
+    fun updateDetail(detail: LocationDetail): Int {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_DETAIL_TITLE, detail.title)
+            put(COLUMN_DETAIL_DESCRIPTION, detail.description)
+        }
+        return db.update(TABLE_DETAILS,
+            values,
+            "$COLUMN_DETAIL_ID = ?",
+            arrayOf(detail.id.toString()))
+    }
+
+    fun deleteDetail(detailId: Int): Int {
+        val db = this.writableDatabase
+        return db.delete(TABLE_DETAILS,
+            "$COLUMN_DETAIL_ID = ?",
+            arrayOf(detailId.toString()))
     }
 }

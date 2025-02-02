@@ -15,7 +15,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var latitude: Double = 0.0
     private var longitude: Double = 0.0
     private var locationName: String = ""
-    private val DEFAULT_ZOOM = 15f
+    private val DEFAULT_ZOOM = 18f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
