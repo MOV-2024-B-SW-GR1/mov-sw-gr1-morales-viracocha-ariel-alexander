@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="280dp"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="#FEF9E0">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Hora de la Alarma -->
+        <TextView
+            android:id="@+id/txtHora"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hora de la Alarma"
+            android:textSize="18sp"
+            android:textColor="#586232"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Motivo de la Alarma -->
+        <TextView
+            android:id="@+id/txtMotivo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Motivo de la Alarma"
+            android:textSize="16sp"
+            android:textColor="#586232"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Ubicación de la Parcela -->
+        <TextView
+            android:id="@+id/txtUbicacion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ubicación de la Parcela"
+            android:textSize="16sp"
+            android:textColor="#586232"/>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

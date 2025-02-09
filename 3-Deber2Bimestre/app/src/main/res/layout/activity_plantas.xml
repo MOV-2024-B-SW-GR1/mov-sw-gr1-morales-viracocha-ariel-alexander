@@ -1,35 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F5F6F7">
 
-    <!-- RecyclerView para mostrar la lista de plantas -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewPlantas"
+    <!-- Header -->
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:elevation="4dp"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="20dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Plantas"
+            android:textColor="#586232"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Main Content Card -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/btnCrearPlanta" />
+        android:layout_below="@id/headerLayout"
+        android:layout_above="@id/bottomButtonContainer"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp">
 
-    <!-- Texto que aparece si no hay plantas -->
-    <TextView
-        android:id="@+id/txtEmptyPlantas"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="No hay plantas en esta parcela"
-        android:visibility="gone"
-        android:textSize="16sp"
-        android:textColor="@android:color/darker_gray" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    <!-- Botón para crear una nueva planta -->
-    <Button
-        android:id="@+id/btnCrearPlanta"
+            <!-- RecyclerView para mostrar la lista de plantas -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewPlantas"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:padding="8dp"/>
+
+            <!-- Texto que aparece si no hay plantas -->
+            <TextView
+                android:id="@+id/txtEmptyPlantas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="No hay plantas en esta parcela"
+                android:textColor="#586232"
+                android:textSize="16sp"
+                android:visibility="gone"/>
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Container for bottom button -->
+    <FrameLayout
+        android:id="@+id/bottomButtonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
-        android:text="Crear Planta"
-        android:backgroundTint="@android:color/holo_green_light"
-        android:textColor="@android:color/white" />
+        android:background="@android:color/white"
+        android:elevation="8dp"
+        android:padding="16dp">
+
+        <!-- Botón para crear una nueva planta -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCrearPlanta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#586232"
+            android:paddingVertical="12dp"
+            android:text="Crear Planta"
+            android:textColor="@android:color/white"
+            app:cornerRadius="8dp"/>
+    </FrameLayout>
 
 </RelativeLayout>

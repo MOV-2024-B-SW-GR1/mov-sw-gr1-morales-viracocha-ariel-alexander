@@ -137,10 +137,6 @@ class PlantasActivity : AppCompatActivity() {
                         eliminarPlanta(planta)
                         true
                     }
-                    R.id.menuVerDetalles -> {
-                        mostrarDetallesPlanta(planta)
-                        true
-                    }
                     else -> false
                 }
             }
@@ -213,19 +209,6 @@ class PlantasActivity : AppCompatActivity() {
         val db = dbHelper.writableDatabase
         val rowsAffected = db.delete(DBHelper.TABLE_PLANTA, "${DBHelper.COLUMN_PLANTA_ID} = ?", arrayOf(id.toString()))
         return rowsAffected > 0
-    }
-
-    private fun mostrarDetallesPlanta(planta: Planta) {
-        AlertDialog.Builder(this)
-            .setTitle(planta.especie)
-            .setMessage("""
-                Especie: ${planta.especie}
-                Edad: ${planta.edad} años
-                Color: ${planta.color}
-                Altura: ${planta.altura} metros
-            """.trimIndent())
-            .setPositiveButton("Cerrar", null)
-            .show()
     }
 
     private fun actualizarVistaVacia() {

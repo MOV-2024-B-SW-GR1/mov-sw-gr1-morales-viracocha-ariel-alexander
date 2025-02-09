@@ -1,9 +1,43 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme._3Deber2Bimestre" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Color primario -->
+        <item name="colorPrimary">#586232</item>
+        <item name="colorPrimaryContainer">#3E4523</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Color secundario -->
+        <item name="colorSecondary">#586232</item>
+        <item name="colorSecondaryContainer">#3E4523</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Status bar -->
+        <item name="android:statusBarColor">?attr/colorPrimaryContainer</item>
+
+        <!-- Fondo de pantalla -->
+        <item name="android:windowBackground">@color/white</item>
+
+        <!-- Colores de texto (definidos directamente en el tema) -->
+        <item name="android:textColorPrimary">#586232</item>
+        <item name="android:textColorSecondary">#757575</item>
+
+        <!-- Estilo de botón -->
+        <item name="materialButtonStyle">@style/Widget.App.Button</item>
     </style>
 
+    <!-- Tema principal que hereda del base -->
     <style name="Theme._3Deber2Bimestre" parent="Base.Theme._3Deber2Bimestre" />
+
+    <!-- Estilo personalizado para botones -->
+    <style name="Widget.App.Button" parent="Widget.Material3.Button">
+        <item name="android:textColor">@color/white</item>
+        <item name="backgroundTint">#586232</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.App.MediumComponent</item>
+    </style>
+
+    <!-- Radio de esquinas para componentes -->
+    <style name="ShapeAppearance.App.MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
+    </style>
 </resources>

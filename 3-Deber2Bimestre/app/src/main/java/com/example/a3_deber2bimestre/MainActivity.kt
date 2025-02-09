@@ -12,11 +12,15 @@ import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var recyclerViewParcelas: RecyclerView
-    private lateinit var txtEmpty: TextView
+    private lateinit var txtEmptyParcelas: TextView
+    private lateinit var txtEmptyAlarmas: TextView
     private lateinit var btnCrearParcela: Button
     private lateinit var adapter: ParcelaAdapter
+    private lateinit var recyclerViewAlarmas: RecyclerView
+    private lateinit var btnCrearAlarma: Button
+    private lateinit var adapterAlarmas: AlarmaAdapter
 
-    private val dbHelper by lazy { DBHelper(this) } // Inicializa el helper de la base de datos
+    private val dbHelper by lazy { DBHelper(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,32 +29,195 @@ class MainActivity : AppCompatActivity() {
         initializeViews()
         setupRecyclerView()
         setupListeners()
-        cargarParcelas() // Cargar parcelas desde SQLite
+        cargarParcelas()
+        cargarAlarmas()
         actualizarVistaVacia()
     }
 
     private fun initializeViews() {
         recyclerViewParcelas = findViewById(R.id.recyclerViewParcelas)
-        txtEmpty = findViewById(R.id.txtEmpty)
+        recyclerViewAlarmas = findViewById(R.id.recyclerViewAlarmas)
+        btnCrearAlarma = findViewById(R.id.btnCrearAlarma)
         btnCrearParcela = findViewById(R.id.btnCrearParcela)
+
+        // Nuevas referencias para los estados vacíos
+        txtEmptyParcelas = findViewById(R.id.txtEmptyParcelas)
+        txtEmptyAlarmas = findViewById(R.id.txtEmptyAlarmas)
     }
+
 
     private fun setupRecyclerView() {
         adapter = ParcelaAdapter(mutableListOf()) { parcela, view ->
             mostrarMenuParcela(parcela, view)
         }
+        adapterAlarmas = AlarmaAdapter(mutableListOf()) { alarma, view ->
+            mostrarMenuAlarma(alarma, view)
+        }
+
+        recyclerViewAlarmas.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = this@MainActivity.adapterAlarmas
+        }
+
         recyclerViewParcelas.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = this@MainActivity.adapter
         }
+
+        // Verificar estado vacío después de inicializar los adapters
+        actualizarVistaVacia()
     }
+
+    private fun actualizarVistaVacia() {
+        // Para Parcelas
+        if (adapter.itemCount == 0) {
+            txtEmptyParcelas.visibility = View.VISIBLE
+            recyclerViewParcelas.visibility = View.GONE
+        } else {
+            txtEmptyParcelas.visibility = View.GONE
+            recyclerViewParcelas.visibility = View.VISIBLE
+        }
+
+        // Para Alarmas
+        if (adapterAlarmas.itemCount == 0) {
+            txtEmptyAlarmas.visibility = View.VISIBLE
+            recyclerViewAlarmas.visibility = View.GONE
+        } else {
+            txtEmptyAlarmas.visibility = View.GONE
+            recyclerViewAlarmas.visibility = View.VISIBLE
+        }
+    }
+
 
     private fun setupListeners() {
         btnCrearParcela.setOnClickListener {
             mostrarDialogoCrearParcela()
         }
+        btnCrearAlarma.setOnClickListener {
+            mostrarDialogoCrearAlarma()
+        }
     }
 
+    private fun cargarAlarmas() {
+        val alarmas = mutableListOf<Alarma>()
+        val cursor = dbHelper.obtenerAlarmas()
+
+        cursor.use {
+            while (it.moveToNext()) {
+                val id = it.getInt(it.getColumnIndexOrThrow(DBHelper.COLUMN_ALARMA_ID))  // Agregar id
+                val hora = it.getString(it.getColumnIndexOrThrow(DBHelper.COLUMN_ALARMA_HORA))
+                val motivo = it.getString(it.getColumnIndexOrThrow(DBHelper.COLUMN_ALARMA_MOTIVO))
+                val ubicacion = it.getString(it.getColumnIndexOrThrow(DBHelper.COLUMN_ALARMA_UBICACION))
+                alarmas.add(Alarma(id, hora, motivo, ubicacion))  // Incluir id
+            }
+        }
+        adapterAlarmas.updateData(alarmas)
+        actualizarVistaVacia()
+    }
+
+
+    private fun mostrarDialogoCrearAlarma() {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(50, 30, 50, 30)
+        }
+
+        val inputHora = EditText(this).apply { hint = "Hora" }
+        val inputMotivo = EditText(this).apply { hint = "Motivo" }
+        val inputUbicacion = EditText(this).apply { hint = "Ubicación" }
+
+        layout.addView(inputHora)
+        layout.addView(inputMotivo)
+        layout.addView(inputUbicacion)
+
+        AlertDialog.Builder(this)
+            .setTitle("Nueva Alarma")
+            .setView(layout)
+            .setPositiveButton("Guardar") { _, _ ->
+                val hora = inputHora.text.toString()
+                val motivo = inputMotivo.text.toString()
+                val ubicacion = inputUbicacion.text.toString()
+
+                if (hora.isNotEmpty() && motivo.isNotEmpty() && ubicacion.isNotEmpty()) {
+                    val id = dbHelper.insertarAlarma(hora, motivo, ubicacion).toInt() // Convertimos el ID a Int
+                    if (id != -1) { // Si la inserción fue exitosa
+                        val nuevaAlarma = Alarma(id, hora, motivo, ubicacion) // Ahora pasamos el ID correctamente
+                        adapterAlarmas.addAlarma(nuevaAlarma)
+                        actualizarVistaVacia()
+                    } else {
+                        Toast.makeText(this, "Error al crear alarma", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+
+    private fun mostrarMenuAlarma(alarma: Alarma, view: View) {
+        PopupMenu(this, view).apply {
+            menuInflater.inflate(R.menu.menu_alarma, menu)
+            setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.menuEditar -> {
+                        editarAlarma(alarma)
+                        true
+                    }
+                    R.id.menuEliminar -> {
+                        eliminarAlarma(alarma)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            show()
+        }
+    }
+
+    private fun editarAlarma(alarma: Alarma) {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(50, 30, 50, 30)
+        }
+
+        val inputHora = EditText(this).apply { setText(alarma.hora) }
+        val inputMotivo = EditText(this).apply { setText(alarma.motivo) }
+        val inputUbicacion = EditText(this).apply { setText(alarma.ubicacion) }
+
+        layout.addView(inputHora)
+        layout.addView(inputMotivo)
+        layout.addView(inputUbicacion)
+
+        AlertDialog.Builder(this)
+            .setTitle("Editar Alarma")
+            .setView(layout)
+            .setPositiveButton("Guardar") { _, _ ->
+                val nuevaHora = inputHora.text.toString()
+                val nuevoMotivo = inputMotivo.text.toString()
+                val nuevaUbicacion = inputUbicacion.text.toString()
+
+                dbHelper.actualizarAlarma(alarma.id.toString(), nuevaHora, nuevoMotivo, nuevaUbicacion) // Usar ID
+                cargarAlarmas()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun eliminarAlarma(alarma: Alarma) {
+        AlertDialog.Builder(this)
+            .setTitle("Eliminar Alarma")
+            .setMessage("¿Estás seguro de que quieres eliminar esta alarma?")
+            .setPositiveButton("Sí") { _, _ ->
+                dbHelper.eliminarAlarma(alarma.id.toString())  // Usar ID en lugar de hora
+                cargarAlarmas()
+                actualizarVistaVacia()
+            }
+            .setNegativeButton("No", null)
+            .show()
+    }
+
+
+    // Métodos para Parcelas
     private fun cargarParcelas() {
         val parcelas = mutableListOf<Parcela>()
         val db = dbHelper.readableDatabase
@@ -62,7 +229,8 @@ class MainActivity : AppCompatActivity() {
             parcelas.add(Parcela(id, nombre))
         }
         cursor.close()
-        adapter.updateData(parcelas) // Actualiza el adaptador con los datos de SQLite
+        adapter.updateData(parcelas)
+        actualizarVistaVacia()
     }
 
     private fun mostrarDialogoCrearParcela() {
@@ -96,6 +264,7 @@ class MainActivity : AppCompatActivity() {
             put(DBHelper.COLUMN_PARCELA_NOMBRE, nombre)
         }
         return db.insert(DBHelper.TABLE_PARCELA, null, values)
+        actualizarVistaVacia()
     }
 
     private fun mostrarMenuParcela(parcela: Parcela, view: View) {
@@ -138,6 +307,7 @@ class MainActivity : AppCompatActivity() {
                     if (actualizado) {
                         parcela.nombre = nuevoNombre
                         adapter.notifyDataSetChanged()
+                        actualizarVistaVacia()
                     } else {
                         Toast.makeText(this, "Error al actualizar parcela", Toast.LENGTH_SHORT).show()
                     }
@@ -154,6 +324,7 @@ class MainActivity : AppCompatActivity() {
         }
         val rowsAffected = db.update(DBHelper.TABLE_PARCELA, values, "${DBHelper.COLUMN_PARCELA_ID} = ?", arrayOf(id.toString()))
         return rowsAffected > 0
+        actualizarVistaVacia()
     }
 
     private fun eliminarParcela(parcela: Parcela) {
@@ -185,15 +356,5 @@ class MainActivity : AppCompatActivity() {
             putExtra("PARCELA_NOMBRE", parcela.nombre)
         }
         startActivity(intent)
-    }
-
-    private fun actualizarVistaVacia() {
-        if (adapter.itemCount == 0) {
-            txtEmpty.visibility = View.VISIBLE
-            recyclerViewParcelas.visibility = View.GONE
-        } else {
-            txtEmpty.visibility = View.GONE
-            recyclerViewParcelas.visibility = View.VISIBLE
-        }
     }
 }
